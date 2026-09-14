@@ -1,0 +1,360 @@
+import type { SeoLocation } from "./types";
+
+export type ScotlandLocationSeed = {
+  readonly slug: string;
+  readonly name: string;
+  readonly type?: SeoLocation["type"];
+  readonly parentSlug?: string;
+  readonly councilArea: string;
+  readonly region: string;
+  readonly postcodeExamples: readonly string[];
+  readonly nearbyLocations: readonly string[];
+  readonly keyRoads: readonly string[];
+  readonly landmarks: readonly string[];
+  readonly latitude?: number;
+  readonly longitude?: number;
+  readonly priority?: SeoLocation["priority"];
+  readonly coverageStatus?: SeoLocation["coverageStatus"];
+  readonly indexable?: boolean;
+  readonly contentDepth?: SeoLocation["contentDepth"];
+  readonly localProofNotes?: readonly string[];
+  readonly disabledReason?: string;
+};
+
+type AreaTuple = readonly [
+  slug: string,
+  name: string,
+  postcodeExamples: readonly string[],
+  landmarks: readonly string[],
+  nearbyLocations: readonly string[],
+];
+
+type FutureAreaTuple = readonly [
+  slug: string,
+  name: string,
+  type: SeoLocation["type"],
+  councilArea: string,
+  region: string,
+  postcodeExamples: readonly string[],
+  nearbyLocations: readonly string[],
+  keyRoads: readonly string[],
+  landmarks: readonly string[],
+];
+
+const COVERAGE_NOT_CONFIRMED = "Coverage not confirmed";
+
+function futureLocation(seed: ScotlandLocationSeed): ScotlandLocationSeed {
+  return {
+    ...seed,
+    coverageStatus: "future",
+    indexable: false,
+    contentDepth: "thin",
+    disabledReason: COVERAGE_NOT_CONFIRMED,
+  };
+}
+
+function futureArea([
+  slug,
+  name,
+  type,
+  councilArea,
+  region,
+  postcodeExamples,
+  nearbyLocations,
+  keyRoads,
+  landmarks,
+]: FutureAreaTuple): ScotlandLocationSeed {
+  return futureLocation({
+    slug,
+    name,
+    type,
+    councilArea,
+    region,
+    postcodeExamples,
+    nearbyLocations,
+    keyRoads,
+    landmarks,
+    priority: 5,
+  });
+}
+
+export const SCOTLAND_SEED_CONTEXT = {
+  country: "Scotland",
+  regions: [
+    "Glasgow and Clyde",
+    "Edinburgh and Lothians",
+    "Tayside",
+    "Fife",
+    "Ayrshire",
+    "Lanarkshire",
+    "Forth Valley",
+    "Perthshire",
+    "North East Scotland",
+    "Highlands",
+    "South Scotland",
+    "West Scotland",
+  ],
+  councils: [
+    "Aberdeen City",
+    "Angus",
+    "Argyll and Bute",
+    "City of Edinburgh",
+    "Clackmannanshire",
+    "Dumfries and Galloway",
+    "Dundee City",
+    "East Ayrshire",
+    "East Dunbartonshire",
+    "East Lothian",
+    "East Renfrewshire",
+    "Falkirk",
+    "Fife",
+    "Glasgow City",
+    "Highland",
+    "Inverclyde",
+    "Midlothian",
+    "Moray",
+    "North Ayrshire",
+    "North Lanarkshire",
+    "Perth and Kinross",
+    "Renfrewshire",
+    "Scottish Borders",
+    "South Ayrshire",
+    "South Lanarkshire",
+    "Stirling",
+    "West Dunbartonshire",
+    "West Lothian",
+  ],
+} as const;
+
+const ADDITIONAL_GLASGOW_DISTRICTS: readonly ScotlandLocationSeed[] = ([
+  ["merchant-city", "Merchant City", ["G1"], ["Merchant Square", "Trongate", "High Street"], ["city-centre", "dennistoun", "bridgeton"]],
+  ["anderston", "Anderston", ["G3"], ["Argyle Street", "Finnieston", "Charing Cross"], ["finnieston", "city-centre", "west-end"]],
+  ["woodlands", "Woodlands", ["G3", "G4"], ["Great Western Road", "Sauchiehall Street", "Kelvingrove Park"], ["hillhead", "city-centre", "finnieston"]],
+  ["cowcaddens", "Cowcaddens", ["G4"], ["Cowcaddens Road", "Glasgow Caledonian University", "Buchanan Bus Station"], ["city-centre", "woodlands", "north-glasgow"]],
+  ["anniesland", "Anniesland", ["G13"], ["Great Western Road", "Anniesland Cross", "Temple"], ["knightswood", "west-end", "bearsden"]],
+  ["knightswood", "Knightswood", ["G13"], ["Knightswood Cross", "Great Western Road", "Scotstounhill"], ["anniesland", "drumchapel", "scotstoun"]],
+  ["scotstoun", "Scotstoun", ["G13", "G14"], ["Scotstoun Stadium", "Dumbarton Road", "Victoria Park"], ["yoker", "partick", "knightswood"]],
+  ["yoker", "Yoker", ["G13", "G14"], ["Yoker station", "Dumbarton Road", "Clydebank"], ["scotstoun", "clydebank", "knightswood"]],
+  ["garrowhill", "Garrowhill", ["G69"], ["Garrowhill station", "Baillieston", "M8 junction areas"], ["baillieston", "easterhouse", "shettleston"]],
+  ["easterhouse", "Easterhouse", ["G34"], ["Easterhouse Road", "Glasgow Fort", "Garrowhill"], ["baillieston", "garrowhill", "shettleston"]],
+  ["tollcross", "Tollcross", ["G32"], ["Tollcross Road", "Tollcross Park", "Shettleston"], ["shettleston", "parkhead", "bridgeton"]],
+  ["pollokshaws", "Pollokshaws", ["G43"], ["Pollokshaws Road", "Shawlands", "Pollok Country Park"], ["shawlands", "newlands", "pollok"]],
+  ["newlands", "Newlands", ["G43"], ["Kilmarnock Road", "Newlands Park", "Merrylee"], ["shawlands", "pollokshaws", "cathcart"]],
+  ["castlemilk", "Castlemilk", ["G44", "G45"], ["Castlemilk Drive", "Cathkin Braes", "Croftfoot"], ["cathcart", "rutherglen", "clarkston"]],
+  ["crookston", "Crookston", ["G53"], ["Crookston Road", "Silverburn", "Pollok"], ["pollok", "cardonald", "paisley"]],
+] satisfies readonly AreaTuple[]).map(([slug, name, postcodeExamples, landmarks, nearbyLocations]) => ({
+  slug,
+  name,
+  type: "neighbourhood",
+  parentSlug: "glasgow",
+  councilArea: "Glasgow City",
+  region: "Glasgow and Clyde",
+  postcodeExamples,
+  nearbyLocations,
+  keyRoads: ["M8", "M74", "M77", "M80", "A82"],
+  landmarks,
+  priority: 2,
+  coverageStatus: "core",
+  indexable: true,
+  contentDepth: "strong",
+  localProofNotes: ["Glasgow core district page; availability and safe access are confirmed before dispatch."],
+}));
+
+const ADDITIONAL_EDINBURGH_DISTRICTS: readonly ScotlandLocationSeed[] = ([
+  ["newington", "Newington", ["EH8", "EH9"], ["South Clerk Street", "The Meadows", "Holyrood Park"], ["old-town", "marchmont", "liberton"]],
+  ["tollcross", "Tollcross", ["EH3"], ["Lothian Road", "The Meadows", "Fountainbridge"], ["old-town", "bruntsfield", "fountainbridge"]],
+  ["fountainbridge", "Fountainbridge", ["EH3", "EH11"], ["Fountain Park", "Union Canal", "Haymarket"], ["haymarket", "tollcross", "dalry"]],
+  ["sighthill", "Sighthill", ["EH11"], ["Calder Road", "Edinburgh Park", "Bankhead"], ["gorgie", "corstorphine", "haymarket"]],
+  ["granton", "Granton", ["EH5"], ["Granton Harbour", "Waterfront Avenue", "Pilton"], ["leith", "stockbridge", "canonmills"]],
+  ["clermiston", "Clermiston", ["EH4"], ["Queensferry Road", "Drum Brae", "Corstorphine Hill"], ["corstorphine", "murrayfield", "south-queensferry"]],
+  ["liberton", "Liberton", ["EH16"], ["Liberton Road", "Gilmerton", "Royal Infirmary"], ["newington", "craigmillar", "morningside"]],
+  ["meadowbank", "Meadowbank", ["EH7"], ["London Road", "Meadowbank Sports Centre", "Holyrood Park"], ["leith", "old-town", "restalrig"]],
+  ["restalrig", "Restalrig", ["EH7"], ["Restalrig Road", "Lochend", "Leith Links"], ["leith", "meadowbank", "portobello"]],
+] satisfies readonly AreaTuple[]).map(([slug, name, postcodeExamples, landmarks, nearbyLocations]) => ({
+  slug,
+  name,
+  type: "district",
+  parentSlug: "edinburgh",
+  councilArea: "City of Edinburgh",
+  region: "Edinburgh and Lothians",
+  postcodeExamples,
+  nearbyLocations,
+  keyRoads: ["A720", "M8", "A1", "A90"],
+  landmarks,
+  priority: 2,
+  coverageStatus: "core",
+  indexable: true,
+  contentDepth: "strong",
+  localProofNotes: ["Edinburgh core district page; availability and safe access are confirmed before dispatch."],
+}));
+
+const ADDITIONAL_DUNDEE_DISTRICTS: readonly ScotlandLocationSeed[] = ([
+  ["coldside", "Coldside", ["DD3"], ["Dens Road", "Hilltown", "Dundee Law"], ["stobswell", "city-centre", "lochee"]],
+  ["menzieshill", "Menzieshill", ["DD2"], ["Ninewells Hospital", "Charleston", "Perth Road"], ["charleston", "west-end", "lochee"]],
+  ["downfield", "Downfield", ["DD3"], ["Strathmartine Road", "Kirkton", "Camperdown"], ["lochee", "coldside", "fintry"]],
+  ["whitfield", "Whitfield", ["DD4"], ["Whitfield Drive", "Fintry", "Ballumbie"], ["fintry", "douglas", "broughty-ferry"]],
+  ["balgay", "Balgay", ["DD2"], ["Balgay Park", "Lochee Road", "Blackness"], ["west-end", "lochee", "city-centre"]],
+  ["barnhill", "Barnhill", ["DD5"], ["Broughty Ferry Road", "Barnhill Rock Garden", "Monifieth"], ["broughty-ferry", "monifieth", "dundee"]],
+  ["ardler", "Ardler", ["DD3"], ["Turnberry Avenue", "Downfield", "Kirkton"], ["downfield", "coldside", "lochee"]],
+] satisfies readonly AreaTuple[]).map(([slug, name, postcodeExamples, landmarks, nearbyLocations]) => ({
+  slug,
+  name,
+  type: "district",
+  parentSlug: "dundee",
+  councilArea: "Dundee City",
+  region: "Tayside",
+  postcodeExamples,
+  nearbyLocations,
+  keyRoads: ["A90", "A92", "Kingsway", "Tay Road Bridge"],
+  landmarks,
+  priority: 2,
+  coverageStatus: "core",
+  indexable: true,
+  contentDepth: "strong",
+  localProofNotes: ["Dundee core district page; availability and safe access are confirmed before dispatch."],
+}));
+
+const ADDITIONAL_ROAD_CORRIDORS: readonly ScotlandLocationSeed[] = [
+  {
+    slug: "m9",
+    name: "M9 corridor",
+    type: "roadCorridor",
+    councilArea: "Scotland",
+    region: "Scotland road corridors",
+    postcodeExamples: [],
+    nearbyLocations: ["edinburgh", "linlithgow", "falkirk", "stirling"],
+    keyRoads: ["M9"],
+    landmarks: ["Edinburgh junction areas", "Linlithgow", "Falkirk", "Stirling"],
+    priority: 3,
+    coverageStatus: "nearby",
+    indexable: true,
+    contentDepth: "medium",
+    localProofNotes: ["Route-led page uses safe-access wording for accessible locations near junction areas."],
+  },
+  {
+    slug: "m73",
+    name: "M73 corridor",
+    type: "roadCorridor",
+    councilArea: "Scotland",
+    region: "Scotland road corridors",
+    postcodeExamples: [],
+    nearbyLocations: ["glasgow", "coatbridge", "bellshill", "cumbernauld"],
+    keyRoads: ["M73"],
+    landmarks: ["Baillieston junction areas", "M74 connection", "M80 connection"],
+    priority: 3,
+    coverageStatus: "nearby",
+    indexable: true,
+    contentDepth: "medium",
+    localProofNotes: ["Route-led page uses safe-access wording for accessible locations near junction areas."],
+  },
+  {
+    slug: "m876",
+    name: "M876 corridor",
+    type: "roadCorridor",
+    councilArea: "Scotland",
+    region: "Scotland road corridors",
+    postcodeExamples: [],
+    nearbyLocations: ["falkirk", "larbert", "bonnybridge", "stirling"],
+    keyRoads: ["M876"],
+    landmarks: ["Larbert junction areas", "Bonnybridge", "Falkirk approaches"],
+    priority: 4,
+    coverageStatus: "nearby",
+    indexable: true,
+    contentDepth: "medium",
+    localProofNotes: ["Route-led page uses safe-access wording for accessible locations near junction areas."],
+  },
+  futureLocation({
+    slug: "m898",
+    name: "M898 corridor",
+    type: "roadCorridor",
+    councilArea: "Scotland",
+    region: "Scotland road corridors",
+    postcodeExamples: [],
+    nearbyLocations: ["erskine", "renfrew", "clydebank", "paisley"],
+    keyRoads: ["M898"],
+    landmarks: ["Erskine Bridge junction areas", "Bishopton", "Old Kilpatrick"],
+    priority: 5,
+  }),
+];
+
+const FUTURE_SCOTLAND_TOWN_AND_VILLAGE_SEEDS: readonly ScotlandLocationSeed[] = ([
+  ["uddingston", "Uddingston", "town", "South Lanarkshire", "Lanarkshire", ["G71"], ["bothwell", "bellshill", "rutherglen"], ["M74", "A721", "A725"], ["Uddingston Main Street", "Bothwell Castle", "Tannochside"]],
+  ["bothwell", "Bothwell", "village", "South Lanarkshire", "Lanarkshire", ["G71"], ["uddingston", "hamilton", "bellshill"], ["M74", "A725", "A721"], ["Bothwell Main Street", "Bothwell Castle", "Clyde walkway"]],
+  ["blantyre", "Blantyre", "town", "South Lanarkshire", "Lanarkshire", ["G72"], ["hamilton", "east-kilbride", "cambuslang"], ["A725", "A724", "M74"], ["Blantyre town centre", "David Livingstone Birthplace", "High Blantyre"]],
+  ["carluke", "Carluke", "town", "South Lanarkshire", "Lanarkshire", ["ML8"], ["lanark", "wishaw", "larkhall"], ["A73", "A721", "M74"], ["Carluke High Street", "Law", "Braidwood"]],
+  ["lanark", "Lanark", "town", "South Lanarkshire", "Lanarkshire", ["ML11"], ["carluke", "larkhall", "hamilton"], ["A73", "A72", "M74"], ["Lanark town centre", "New Lanark", "Lanark Loch"]],
+  ["strathaven", "Strathaven", "town", "South Lanarkshire", "Lanarkshire", ["ML10"], ["east-kilbride", "hamilton", "larkhall"], ["A71", "A726", "M74"], ["Strathaven town centre", "Strathaven Park", "Glassford"]],
+  ["shotts", "Shotts", "town", "North Lanarkshire", "Lanarkshire", ["ML7"], ["wishaw", "airdrie", "livingston"], ["M8", "A71", "A73"], ["Shotts town centre", "Salsburgh", "Harthill"]],
+  ["chapelhall", "Chapelhall", "village", "North Lanarkshire", "Lanarkshire", ["ML6"], ["airdrie", "coatbridge", "bellshill"], ["M8", "A73", "A725"], ["Chapelhall Main Street", "Airdrie", "Eurocentral"]],
+  ["holytown", "Holytown", "village", "North Lanarkshire", "Lanarkshire", ["ML1"], ["motherwell", "bellshill", "coatbridge"], ["M8", "M74", "A723"], ["Holytown Road", "Eurocentral", "Newhouse"]],
+  ["viewpark", "Viewpark", "village", "North Lanarkshire", "Lanarkshire", ["G71"], ["uddingston", "bellshill", "coatbridge"], ["M8", "M74", "A725"], ["Viewpark Road", "Tannochside", "Strathclyde Business Park"]],
+  ["moodiesburn", "Moodiesburn", "village", "North Lanarkshire", "Lanarkshire", ["G69"], ["cumbernauld", "bishopbriggs", "coatbridge"], ["M80", "A80", "M73"], ["Moodiesburn", "Chryston", "Mollinsburn"]],
+  ["kilsyth", "Kilsyth", "town", "North Lanarkshire", "Lanarkshire", ["G65"], ["cumbernauld", "stirling", "falkirk"], ["M80", "A803", "A891"], ["Kilsyth town centre", "Burngreen", "Colzium"]],
+  ["prestwick", "Prestwick", "town", "South Ayrshire", "Ayrshire", ["KA9"], ["ayr", "troon", "kilmarnock"], ["A77", "A79", "A78"], ["Prestwick town centre", "Prestwick Airport", "Monkton"]],
+  ["troon", "Troon", "town", "South Ayrshire", "Ayrshire", ["KA10"], ["prestwick", "ayr", "irvine"], ["A78", "A77", "A759"], ["Troon town centre", "Troon harbour", "Royal Troon"]],
+  ["saltcoats", "Saltcoats", "town", "North Ayrshire", "Ayrshire", ["KA21"], ["ardrossan", "kilwinning", "irvine"], ["A78", "A738", "A737"], ["Saltcoats town centre", "Saltcoats beach", "Stevenston"]],
+  ["ardrossan", "Ardrossan", "town", "North Ayrshire", "Ayrshire", ["KA22"], ["saltcoats", "kilwinning", "irvine"], ["A78", "A738", "A737"], ["Ardrossan harbour", "Ardrossan South Beach", "Saltcoats"]],
+  ["largs", "Largs", "town", "North Ayrshire", "Ayrshire", ["KA30"], ["greenock", "irvine", "kilwinning"], ["A78", "A760", "A737"], ["Largs promenade", "Largs ferry terminal", "Kelburn"]],
+  ["kilwinning", "Kilwinning", "town", "North Ayrshire", "Ayrshire", ["KA13"], ["irvine", "saltcoats", "ardrossan"], ["A78", "A737", "A738"], ["Kilwinning town centre", "Kilwinning Abbey", "Eglinton"]],
+  ["stewarton", "Stewarton", "town", "East Ayrshire", "Ayrshire", ["KA3"], ["kilmarnock", "barrhead", "irvine"], ["A735", "A77", "M77"], ["Stewarton town centre", "Lainshaw", "Dunlop"]],
+  ["cumnock", "Cumnock", "town", "East Ayrshire", "Ayrshire", ["KA18"], ["kilmarnock", "ayr", "dumfries"], ["A70", "A76", "A77"], ["Cumnock town centre", "Auchinleck", "Lugar"]],
+  ["maybole", "Maybole", "town", "South Ayrshire", "Ayrshire", ["KA19"], ["ayr", "girvan", "kilmarnock"], ["A77", "A70", "A719"], ["Maybole town centre", "Culzean approaches", "Crosshill"]],
+  ["girvan", "Girvan", "town", "South Ayrshire", "Ayrshire", ["KA26"], ["ayr", "maybole", "stranraer"], ["A77", "A714", "A70"], ["Girvan harbour", "Girvan town centre", "Turnberry"]],
+  ["armadale", "Armadale", "town", "West Lothian", "Edinburgh and Lothians", ["EH48"], ["bathgate", "whitburn", "livingston"], ["M8", "A89", "A801"], ["Armadale town centre", "Armadale station", "Bathgate"]],
+  ["whitburn", "Whitburn", "town", "West Lothian", "Edinburgh and Lothians", ["EH47"], ["bathgate", "armadale", "livingston"], ["M8", "A706", "A801"], ["Whitburn town centre", "Heartlands", "Greenrigg"]],
+  ["blackburn", "Blackburn", "town", "West Lothian", "Edinburgh and Lothians", ["EH47"], ["bathgate", "livingston", "whitburn"], ["M8", "A705", "A801"], ["Blackburn Main Street", "Bathgate", "Seafield"]],
+  ["west-calder", "West Calder", "town", "West Lothian", "Edinburgh and Lothians", ["EH55"], ["livingston", "bathgate", "polbeth"], ["A71", "M8", "A704"], ["West Calder town centre", "Polbeth", "Harburn"]],
+  ["polbeth", "Polbeth", "village", "West Lothian", "Edinburgh and Lothians", ["EH55"], ["west-calder", "livingston", "bathgate"], ["A71", "M8", "A704"], ["Polbeth", "Five Sisters", "West Calder"]],
+  ["winchburgh", "Winchburgh", "village", "West Lothian", "Edinburgh and Lothians", ["EH52"], ["broxburn", "linlithgow", "edinburgh"], ["M9", "M8", "A89"], ["Winchburgh", "Niddry Road", "Broxburn"]],
+  ["denny", "Denny", "town", "Falkirk", "Forth Valley", ["FK6"], ["bonnybridge", "falkirk", "stirling"], ["M80", "A872", "M876"], ["Denny town centre", "Dunipace", "Bonnybridge"]],
+  ["bo-ness", "Bo'ness", "town", "Falkirk", "Forth Valley", ["EH51"], ["linlithgow", "grangemouth", "falkirk"], ["M9", "A904", "A803"], ["Bo'ness town centre", "Bo'ness railway", "Kinneil"]],
+  ["stenhousemuir", "Stenhousemuir", "town", "Falkirk", "Forth Valley", ["FK5"], ["larbert", "falkirk", "bonnybridge"], ["M876", "M9", "A9"], ["Stenhousemuir town centre", "Larbert", "Forth Valley Royal Hospital"]],
+  ["bridge-of-allan", "Bridge of Allan", "town", "Stirling", "Forth Valley", ["FK9"], ["stirling", "dunblane", "alloa"], ["M9", "A9", "A91"], ["Bridge of Allan", "University of Stirling", "Allan Water"]],
+  ["dunblane", "Dunblane", "town", "Stirling", "Forth Valley", ["FK15"], ["stirling", "bridge-of-allan", "perth"], ["M9", "A9", "A820"], ["Dunblane Cathedral", "Dunblane town centre", "Keir roundabout"]],
+  ["callander", "Callander", "town", "Stirling", "Forth Valley", ["FK17"], ["stirling", "dunblane", "aberfoyle"], ["A84", "A81", "M9"], ["Callander town centre", "Teith Bridge", "Loch Lomond and Trossachs gateway"]],
+  ["tillicoultry", "Tillicoultry", "town", "Clackmannanshire", "Forth Valley", ["FK13"], ["alloa", "alva", "stirling"], ["A91", "A907", "A977"], ["Tillicoultry town centre", "Sterling Mills", "Ochil Hills"]],
+  ["tullibody", "Tullibody", "town", "Clackmannanshire", "Forth Valley", ["FK10"], ["alloa", "stirling", "alva"], ["A907", "A91", "A977"], ["Tullibody", "Alloa", "Cambus"]],
+  ["alva", "Alva", "town", "Clackmannanshire", "Forth Valley", ["FK12"], ["alloa", "tillicoultry", "stirling"], ["A91", "A907", "A977"], ["Alva town centre", "Ochil Road", "Menstrie"]],
+  ["dollar", "Dollar", "town", "Clackmannanshire", "Forth Valley", ["FK14"], ["alloa", "tillicoultry", "dunfermline"], ["A91", "A977", "M90"], ["Dollar town centre", "Dollar Academy", "Castle Campbell"]],
+  ["rosyth", "Rosyth", "town", "Fife", "Fife", ["KY11"], ["dunfermline", "inverkeithing", "edinburgh"], ["M90", "A985", "A823"], ["Rosyth dockyard", "Rosyth station", "Queensferry Crossing"]],
+  ["inverkeithing", "Inverkeithing", "town", "Fife", "Fife", ["KY11"], ["rosyth", "dunfermline", "dalgety-bay"], ["M90", "A921", "A985"], ["Inverkeithing town centre", "Inverkeithing station", "Forth bridges"]],
+  ["dalgety-bay", "Dalgety Bay", "town", "Fife", "Fife", ["KY11"], ["inverkeithing", "rosyth", "kirkcaldy"], ["A921", "M90", "A92"], ["Dalgety Bay town centre", "Fife coastal route", "Inverkeithing"]],
+  ["burntisland", "Burntisland", "town", "Fife", "Fife", ["KY3"], ["kirkcaldy", "cowdenbeath", "dunfermline"], ["A921", "A92", "M90"], ["Burntisland Links", "Burntisland station", "Kinghorn"]],
+  ["methil", "Methil", "town", "Fife", "Fife", ["KY8"], ["leven", "glenrothes", "kirkcaldy"], ["A915", "A911", "A92"], ["Methil docks", "Leven", "Buckhaven"]],
+  ["cupar", "Cupar", "town", "Fife", "Fife", ["KY15"], ["glenrothes", "st-andrews", "dundee"], ["A91", "A92", "A914"], ["Cupar town centre", "Cupar station", "Dairsie"]],
+  ["st-andrews", "St Andrews", "town", "Fife", "Fife", ["KY16"], ["cupar", "dundee", "leven"], ["A91", "A917", "A92"], ["St Andrews town centre", "University of St Andrews", "Old Course"]],
+  ["kelty", "Kelty", "town", "Fife", "Fife", ["KY4"], ["cowdenbeath", "dunfermline", "kinross"], ["M90", "A909", "A92"], ["Kelty Main Street", "Keltybridge", "Cowdenbeath"]],
+  ["lochgelly", "Lochgelly", "town", "Fife", "Fife", ["KY5"], ["cowdenbeath", "kirkcaldy", "glenrothes"], ["A92", "A909", "B981"], ["Lochgelly town centre", "Lochgelly station", "Cardenden"]],
+  ["cardenden", "Cardenden", "village", "Fife", "Fife", ["KY5"], ["lochgelly", "kirkcaldy", "glenrothes"], ["A92", "B981", "A910"], ["Cardenden", "Auchterderran", "Lochgelly"]],
+  ["buckhaven", "Buckhaven", "town", "Fife", "Fife", ["KY8"], ["methil", "leven", "glenrothes"], ["A955", "A915", "A92"], ["Buckhaven High Street", "Methil", "Leven"]],
+  ["north-queensferry", "North Queensferry", "village", "Fife", "Fife", ["KY11"], ["inverkeithing", "rosyth", "edinburgh"], ["M90", "A90", "A921"], ["North Queensferry", "Forth Bridge", "Queensferry Crossing"]],
+  ["auchterarder", "Auchterarder", "town", "Perth and Kinross", "Perthshire", ["PH3"], ["perth", "stirling", "dunblane"], ["A9", "A823", "M90"], ["Auchterarder High Street", "Gleneagles", "Aberuthven"]],
+  ["crieff", "Crieff", "town", "Perth and Kinross", "Perthshire", ["PH7"], ["perth", "auchterarder", "stirling"], ["A85", "A822", "A9"], ["Crieff town centre", "Muthill", "Comrie"]],
+  ["blairgowrie", "Blairgowrie", "town", "Perth and Kinross", "Perthshire", ["PH10"], ["perth", "dundee", "coupar-angus"], ["A93", "A923", "A90"], ["Blairgowrie town centre", "Rattray", "River Ericht"]],
+  ["kinross", "Kinross", "town", "Perth and Kinross", "Perthshire", ["KY13"], ["dunfermline", "perth", "kelty"], ["M90", "A977", "A91"], ["Kinross town centre", "Loch Leven", "M90 junction areas"]],
+  ["pitlochry", "Pitlochry", "town", "Perth and Kinross", "Perthshire", ["PH16"], ["perth", "aberfeldy", "blairgowrie"], ["A9", "A924", "A827"], ["Pitlochry town centre", "Pitlochry station", "Faskally"]],
+  ["aberfeldy", "Aberfeldy", "town", "Perth and Kinross", "Perthshire", ["PH15"], ["pitlochry", "perth", "crieff"], ["A827", "A826", "A9"], ["Aberfeldy town centre", "Wade's Bridge", "Kenmore"]],
+  ["coupar-angus", "Coupar Angus", "town", "Perth and Kinross", "Perthshire", ["PH13"], ["blairgowrie", "dundee", "perth"], ["A923", "A94", "A90"], ["Coupar Angus", "Blairgowrie", "Meigle"]],
+  ["scone", "Scone", "village", "Perth and Kinross", "Perthshire", ["PH2"], ["perth", "blairgowrie", "dundee"], ["A94", "A93", "M90"], ["Scone", "Scone Palace", "Perth Racecourse"]],
+  ["bishopton", "Bishopton", "village", "Renfrewshire", "West Scotland", ["PA7"], ["erskine", "renfrew", "paisley"], ["M8", "A8", "M898"], ["Bishopton station", "Dargavel", "Erskine Bridge"]],
+  ["bridge-of-weir", "Bridge of Weir", "village", "Renfrewshire", "West Scotland", ["PA11"], ["johnstone", "paisley", "kilbarchan"], ["A761", "A737", "M8"], ["Bridge of Weir", "Houston Road", "Kilmacolm Road"]],
+  ["houston", "Houston", "village", "Renfrewshire", "West Scotland", ["PA6"], ["johnstone", "linwood", "bridge-of-weir"], ["A761", "A737", "M8"], ["Houston village", "Crosslee", "Brookfield"]],
+  ["kilbarchan", "Kilbarchan", "village", "Renfrewshire", "West Scotland", ["PA10"], ["johnstone", "linwood", "bridge-of-weir"], ["A737", "A761", "M8"], ["Kilbarchan", "Johnstone", "Howwood"]],
+  ["lochwinnoch", "Lochwinnoch", "village", "Renfrewshire", "West Scotland", ["PA12"], ["johnstone", "kilbarchan", "paisley"], ["A760", "A737", "M8"], ["Lochwinnoch", "Castle Semple", "Howwood"]],
+  ["arbroath", "Arbroath", "town", "Angus", "Tayside", ["DD11"], ["dundee", "montrose", "forfar"], ["A92", "A933", "A90"], ["Arbroath harbour", "Arbroath Abbey", "West Links"]],
+  ["forfar", "Forfar", "town", "Angus", "Tayside", ["DD8"], ["dundee", "arbroath", "brechin"], ["A90", "A932", "A94"], ["Forfar town centre", "Forfar Loch", "Kirriemuir"]],
+  ["montrose", "Montrose", "town", "Angus", "Tayside", ["DD10"], ["arbroath", "forfar", "aberdeen"], ["A92", "A935", "A90"], ["Montrose town centre", "Montrose Basin", "Ferryden"]],
+  ["elgin", "Elgin", "town", "Moray", "North East Scotland", ["IV30"], ["inverness", "aberdeen"], ["A96", "A941"], ["Elgin town centre", "Elgin Cathedral", "New Elgin"]],
+  ["fort-william", "Fort William", "town", "Highland", "Highlands", ["PH33"], ["inverness", "oban"], ["A82", "A830"], ["Fort William town centre", "Ben Nevis", "Loch Linnhe"]],
+  ["oban", "Oban", "town", "Argyll and Bute", "West Scotland", ["PA34"], ["fort-william", "inverness"], ["A85", "A828"], ["Oban town centre", "Oban ferry terminal", "McCaig's Tower"]],
+  ["galashiels", "Galashiels", "town", "Scottish Borders", "South Scotland", ["TD1"], ["edinburgh", "hawick"], ["A7", "A68", "A72"], ["Galashiels town centre", "Tweedbank", "Borders Railway"]],
+  ["hawick", "Hawick", "town", "Scottish Borders", "South Scotland", ["TD9"], ["galashiels", "dumfries"], ["A7", "A698", "A68"], ["Hawick town centre", "Teviotdale", "Liddesdale Road"]],
+] satisfies readonly FutureAreaTuple[]).map(futureArea);
+
+export const ADDITIONAL_SCOTLAND_LOCATION_SEEDS: readonly ScotlandLocationSeed[] = [
+  ...ADDITIONAL_GLASGOW_DISTRICTS,
+  ...ADDITIONAL_EDINBURGH_DISTRICTS,
+  ...ADDITIONAL_DUNDEE_DISTRICTS,
+  ...ADDITIONAL_ROAD_CORRIDORS,
+  ...FUTURE_SCOTLAND_TOWN_AND_VILLAGE_SEEDS,
+];

@@ -1,0 +1,19 @@
+node_modules
+.next
+out
+.env*.local
+.vercel
+*.tsbuildinfo
+.DS_Store
+
+# Local test and automation artifacts
+.tmp*
+*.log
+*.pid
+*.exit
+screen-*.png
+current-screen.png
+
+# Google Ads execution/backups are operational exports, not app source.
+ads phases/phase-c-backups/
+ads phases/phase-f-execute/
