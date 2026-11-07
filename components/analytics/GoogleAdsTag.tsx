@@ -1,18 +1,22 @@
-import { GOOGLE_ADS_ID } from "@/lib/analytics";
+"use client";
+
+import { useEffect } from "react";
+import { CONSENT_CHANGE_EVENT, CONSENT_STORAGE_KEY, syncGoogleAdsConsent } from "@/lib/analytics";
 
 export function GoogleAdsTag() {
-  const code = `
-    gtag('js', new Date());
-    gtag('config', '${GOOGLE_ADS_ID}');
-  `;
-
-  return (
-    <>
-      <script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
-      />
-      <script dangerouslySetInnerHTML={{ __html: code }} />
-    </>
-  );
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== CONSENT_STORAGE_KEY && event.key !== null) return;
+      delete window.dstConsent;
+      syncGoogleAdsConsent();
+    };
+    syncGoogleAdsConsent();
+    window.addEventListener(CONSENT_CHANGE_EVENT, syncGoogleAdsConsent);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(CONSENT_CHANGE_EVENT, syncGoogleAdsConsent);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+  return null;
 }

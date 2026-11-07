@@ -1,0 +1,33 @@
+{
+  "note": "Single Lighthouse mobile lab runs on live sites before deploying local repairs; not field metrics or a controlled before/after experiment.",
+  "reports": [
+    {
+      "file": ".artifacts/repair-2026-11-07/.tmp-lh-home-mobile-current.json",
+      "fetchedAt": "2026-11-07T12:53:04.484Z",
+      "url": "https://www.dukestreettyres.com/",
+      "lighthouseVersion": "12.8.2",
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "performance": 70,
+      "fcpMs": 1052.299,
+      "lcpMs": 3512.996500000001,
+      "tbtMs": 810.0000000000005,
+      "cls": 0,
+      "totalBytes": 818431
+    },
+    {
+      "file": ".artifacts/repair-2026-11-07/.tmp-lh-book-mobile-current.json",
+      "fetchedAt": "2026-11-07T12:51:25.400Z",
+      "url": "https://www.tyrerescue.uk/book?sourceApp=duke_street_tyres",
+      "lighthouseVersion": "12.8.2",
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "performance": 55,
+      "fcpMs": 1035.4099999999999,
+      "lcpMs": 8973.41,
+      "tbtMs": 883,
+      "cls": 0,
+      "totalBytes": 1261350
+    }
+  ]
+}

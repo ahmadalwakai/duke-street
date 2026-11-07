@@ -1,0 +1,32 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm audit --audit-level=moderate
+      - run: npm run build
+      - name: Smoke test production server
+        run: |
+          npm start -- --port 3094 --hostname 127.0.0.1 > /tmp/duke-smoke.log 2>&1 &
+          taskServerPid=$!
+          trap 'kill "$taskServerPid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3094/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:smoke

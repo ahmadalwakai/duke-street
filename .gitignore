@@ -2,6 +2,9 @@ node_modules
 .next
 out
 .env*.local
+.env
+.env.*
+!.env.example
 .vercel
 *.tsbuildinfo
 .DS_Store
@@ -13,7 +16,9 @@ out
 *.exit
 screen-*.png
 current-screen.png
+.artifacts/
 
 # Google Ads execution/backups are operational exports, not app source.
+ads phases/phase-c-build/
 ads phases/phase-c-backups/
 ads phases/phase-f-execute/

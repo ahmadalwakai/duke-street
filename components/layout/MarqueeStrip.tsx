@@ -8,7 +8,7 @@ const TEXT =
 
 export function MarqueeStrip() {
   const reduce = useReducedMotion();
-  const items = Array.from({ length: 6 }, (_, i) => `${TEXT}   `).join("");
+  const items = `${TEXT}   `.repeat(6);
   return (
     <Box
       bg="accent.red"

@@ -1,8 +1,7 @@
-// Lightweight typed wrapper around Google tag (gtag) + Consent Mode v2.
-// All calls are no-ops if gtag is not loaded yet (e.g. consent not granted).
+// Basic Google Consent Mode: no Google script or measurement events before opt-in.
 
 type ConsentValue = "granted" | "denied";
-type ConsentState = {
+export type ConsentState = {
   ad_storage: ConsentValue;
   ad_user_data: ConsentValue;
   ad_personalization: ConsentValue;
@@ -16,52 +15,95 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    dstConsent?: ConsentState;
+    dstGoogleTagStarted?: boolean;
   }
 }
 
 export const GOOGLE_ADS_ID = "AW-18255173604";
+export const CONSENT_STORAGE_KEY = "dst_consent_v2";
+export const CONSENT_CHANGE_EVENT = "dst:consent-changed";
 
 const GOOGLE_ADS_CONVERSIONS = {
   callClick: process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_CONVERSION ?? "",
   whatsappClick: process.env.NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION ?? "",
-  leadForm: process.env.NEXT_PUBLIC_GOOGLE_ADS_LEAD_FORM_CONVERSION ?? "",
-  leadThanks: process.env.NEXT_PUBLIC_GOOGLE_ADS_LEAD_THANKS_CONVERSION ?? "",
 };
 
-function gtag(...args: unknown[]) {
-  if (typeof window === "undefined") return;
-  window.dataLayer = window.dataLayer || [];
-  if (typeof window.gtag === "function") {
-    (window.gtag as (...a: unknown[]) => void)(...args);
-    return;
-  }
-  window.dataLayer.push(args);
+function validConsent(value: unknown): value is ConsentState {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Record<string, unknown>;
+  return ["ad_storage", "ad_user_data", "ad_personalization", "analytics_storage"]
+    .every((key) => state[key] === "granted" || state[key] === "denied");
 }
 
-export function setConsent(state: Partial<ConsentState>) {
-  gtag("consent", "update", state);
-  try {
-    localStorage.setItem("dst_consent_v2", JSON.stringify(state));
-  } catch {
-    /* ignore */
-  }
-}
-
-export function readStoredConsent(): Partial<ConsentState> | null {
+export function readStoredConsent(): ConsentState | null {
   if (typeof window === "undefined") return null;
+  if (window.dstConsent) return window.dstConsent;
   try {
-    const raw = localStorage.getItem("dst_consent_v2");
-    return raw ? (JSON.parse(raw) as Partial<ConsentState>) : null;
+    const raw = window.localStorage.getItem(CONSENT_STORAGE_KEY);
+    const state: unknown = raw ? JSON.parse(raw) : null;
+    return validConsent(state) ? state : null;
   } catch {
     return null;
   }
 }
 
-/** Fire a generic event. Safe before consent — ends up in dataLayer only. */
+export function hasMeasurementConsent(): boolean {
+  const state = readStoredConsent();
+  return state?.ad_storage === "granted" && state.ad_user_data === "granted" &&
+    state.ad_personalization === "granted" && state.analytics_storage === "granted";
+}
+
+function gtag(...args: unknown[]) {
+  if (typeof window === "undefined") return;
+  window.gtag?.(...args);
+}
+
+export function setConsent(state: ConsentState) {
+  if (typeof window === "undefined" || !validConsent(state)) return;
+  // Keep this page functional even when browser storage is unavailable.
+  window.dstConsent = state;
+  try {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // A storage-blocking browser will ask again on the next page.
+  }
+  window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
+}
+
+/** Called on mount and consent changes. Only accepting can load Google's script. */
+export function syncGoogleAdsConsent() {
+  if (typeof window === "undefined") return;
+  if (!hasMeasurementConsent()) {
+    if (window.dstGoogleTagStarted) {
+      gtag("consent", "update", {
+        ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied",
+        analytics_storage: "denied", personalization_storage: "denied",
+      });
+      // Removing a script element cannot unload an already running tag.
+      // Reload with the saved denial so it cannot continue measuring this visit.
+      window.location.reload();
+    }
+    return;
+  }
+  if (window.dstGoogleTagStarted) return;
+  gtag("consent", "update", readStoredConsent());
+  gtag("js", new Date());
+  gtag("config", GOOGLE_ADS_ID);
+  window.dstGoogleTagStarted = true;
+  const script = document.createElement("script");
+  script.id = "dst-google-ads";
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`;
+  document.head.appendChild(script);
+}
+
+/** Drop pre-consent events; never replay earlier clicks when someone opts in. */
 export function track(
   event: string,
   params: Record<string, string | number | boolean> = {},
 ) {
+  if (!hasMeasurementConsent()) return;
   gtag("event", event, params);
 }
 
@@ -69,7 +111,7 @@ function trackConfiguredAdsConversion(
   sendTo: string,
   params: Record<string, string | number | boolean> = {},
 ) {
-  if (!sendTo) return;
+  if (!/^AW-\d+\/[A-Za-z0-9_-]+$/.test(sendTo)) return;
   track("conversion", {
     send_to: sendTo,
     transport_type: "beacon",
@@ -78,32 +120,18 @@ function trackConfiguredAdsConversion(
   });
 }
 
-/** Tap on the call CTA — does NOT block navigation. */
+/** Tap on the call CTA — does not block navigation or invent a monetary value. */
 export function trackCallClick(location: string) {
   track("call_click", { location });
-  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.callClick, {
-    location,
-    value: 40,
-    currency: "GBP",
-  });
+  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.callClick, { location });
 }
 
-/** Tap on the WhatsApp CTA. */
 export function trackWhatsAppClick(location: string) {
   track("whatsapp_click", { location });
-  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.whatsappClick, {
-    location,
-  });
+  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.whatsappClick, { location });
 }
 
-/** Quote-form submission. */
-export function trackQuoteSubmit(payload: { city?: string }) {
-  track("generate_lead", { ...payload });
-  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.leadForm, { ...payload });
-}
-
-/** Thank-you page lead event. */
-export function trackLeadThanks(page = "/thanks") {
-  track("lead_thanks", { page });
-  trackConfiguredAdsConversion(GOOGLE_ADS_CONVERSIONS.leadThanks, { page });
+/** A handoff to Tyre Rescue is a booking start, not a submitted or confirmed lead. */
+export function trackBookingStart(payload: { city?: string }) {
+  track("booking_start", { ...payload });
 }

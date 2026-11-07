@@ -95,6 +95,8 @@ export const AppButton = forwardRef<HTMLButtonElement, AppButtonProps>(
     }
     const { variant, size, trackingLocation: _trackingLocation, ...rest } =
       props as ButtonOnlyProps;
+    // Tracking is only relevant to links; do not forward this custom prop to the DOM.
+    void _trackingLocation;
     return (
       <ChakraButton
         ref={ref}

@@ -162,6 +162,7 @@ try {
   const services = require(path.join(tempDir, "lib", "seo", "services.js"));
   const cities = require(path.join(tempDir, "lib", "cities.js"));
   const reviews = require(path.join(tempDir, "lib", "reviews.js"));
+  const site = require(path.join(tempDir, "lib", "site.js"));
   const pages = seoPages.generateSeoPageCandidates();
   const indexablePages = seoPages.getIndexableSeoPages();
   const sitemapEntries = sitemap.getSeoSitemapEntries();
@@ -176,7 +177,7 @@ try {
   const sitemapIndexLocs = extractXmlLocs(sitemap.buildSitemapIndexXml(sitemap.getSitemapIndexEntries()));
   const expectedIndexLocs = [
     productionUrl("/sitemap-static.xml"),
-    ...configuredChunkNumbers.map((chunkNumber) => productionUrl(`/sitemap-services-${chunkNumber}.xml`)),
+    ...chunks.map((_, index) => productionUrl(`/sitemap-services-${index + 1}.xml`)),
   ];
 
   const duplicateCanonicals = countDuplicates(indexablePages, (page) => page.canonicalUrl);
@@ -201,6 +202,46 @@ try {
   const sitemapIndexUnexpected = sitemapIndexLocs.filter((loc) => !expectedIndexLocs.includes(loc));
   const sourceScan = scanSource();
   const hardcodedReviews = Array.isArray(reviews.REVIEWS) ? reviews.REVIEWS.length : 0;
+  // Source code may legitimately contain development-only URLs. Inspect the
+  // production outputs instead of treating the presence of a string as a leak.
+  const metadataFailures = indexablePages.flatMap((page) => {
+    const metadata = seoPages.buildSeoMetadata(page);
+    const reasons = [];
+    const title = metadata.title?.absolute;
+    if (typeof title !== "string" || title.split(site.SITE.name).length !== 2) {
+      reasons.push(`Title must contain the brand exactly once: ${page.slugPath}`);
+    }
+    if (metadata.alternates?.canonical !== page.canonicalUrl) {
+      reasons.push(`Metadata canonical mismatch: ${page.slugPath}`);
+    }
+    if (/localhost|127\.0\.0\.1/i.test(JSON.stringify([metadata, page.schema]))) {
+      reasons.push(`Localhost leaked into production metadata/schema: ${page.slugPath}`);
+    }
+    return reasons;
+  });
+  const previousNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  let productionBookingUrl;
+  try {
+    productionBookingUrl = site.bookingHref();
+  } finally {
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
+  }
+  const bookingUrlLeaks = /localhost|127\.0\.0\.1/i.test(productionBookingUrl)
+    ? ["Production booking URL points to localhost"]
+    : [];
+  const publishedServiceUrls = new Set(chunks.flat().map((entry) => entry.url));
+  const omittedSitemapUrls = sitemapEntries.filter((entry) => !publishedServiceUrls.has(entry.url));
+  const indexablePaths = new Set(indexablePages.map((page) => page.slugPath));
+  const staticPaths = new Set(staticEntries.map((entry) => new URL(entry.url).pathname));
+  const brokenInternalLinks = new Set();
+  for (const page of indexablePages) {
+    for (const link of page.internalLinks) {
+      if (!indexablePaths.has(link.href) && !staticPaths.has(link.href)) brokenInternalLinks.add(link.href);
+    }
+  }
+  const defaultIntentPages = indexablePages.filter((page) => page.intent === services.getDefaultIntent(page.serviceSlug));
 
   const h1Counts = new Map(indexablePages.map((page) => [page.h1, 0]));
   for (const page of indexablePages) h1Counts.set(page.h1, (h1Counts.get(page.h1) ?? 0) + 1);
@@ -267,8 +308,11 @@ try {
 
   const errors = [
     ...sourceScan.nonWww,
-    ...sourceScan.localhost,
     ...sourceScan.aggregateFields,
+    ...metadataFailures,
+    ...bookingUrlLeaks,
+    ...omittedSitemapUrls.map((entry) => `Indexable URL omitted from sitemap chunks: ${entry.url}`),
+    ...[...brokenInternalLinks].map((href) => `Internal link targets an unavailable route: ${href}`),
     ...duplicateCanonicals.map(([url]) => `Duplicate canonical URL: ${url}`),
     ...duplicateTitles.map(([title]) => `Duplicate title: ${title}`),
     ...duplicateDescriptions.map(([description]) => `Duplicate description: ${description}`),
@@ -290,6 +334,19 @@ try {
 
   console.log(`Total candidates: ${pages.length}`);
   console.log(`Indexable pages: ${indexablePages.length}`);
+  console.log(`Default-intent pages: ${defaultIntentPages.length}`);
+  console.log(`Additional intent variants: ${indexablePages.length - defaultIntentPages.length}`);
+  console.log("Content review: unique URL/title checks do not prove substantive uniqueness; see docs/seo-review.md.");
+  console.log("Indexable pages by service:");
+  services.SEO_SERVICES.forEach((service) => {
+    const count = indexablePages.filter((page) => page.serviceSlug === service.slug).length;
+    if (count > 0) console.log(`- ${service.slug}: ${count}`);
+  });
+  console.log("Indexable pages by intent:");
+  services.SEO_INTENTS.forEach((intent) => {
+    const count = indexablePages.filter((page) => page.intent === intent).length;
+    if (count > 0) console.log(`- ${intent}: ${count}`);
+  });
   console.log(`Noindex/notFound candidates: ${pages.length - indexablePages.length}`);
   console.log(`Sitemap chunks: ${configuredChunks.length} configured, ${chunks.length} non-empty`);
   configuredChunks.forEach((chunk, index) => console.log(`- sitemap-services-${index + 1}.xml: ${chunk.length}`));
@@ -300,7 +357,11 @@ try {
   console.log(`Duplicate H1s: ${duplicateH1s.length}`);
   console.log(`Duplicate sitemap loc values: ${duplicateSitemapLocs.length}`);
   console.log(`Non-www leaks: ${sourceScan.nonWww.length + nonWwwSitemap.length}`);
-  console.log(`Localhost leaks: ${sourceScan.localhost.length + localhostSitemap.length}`);
+  console.log(`Development URL declarations (informational): ${sourceScan.localhost.length}`);
+  console.log(`Production localhost URL failures: ${bookingUrlLeaks.length + localhostSitemap.length}`);
+  console.log(`Metadata contract failures: ${metadataFailures.length}`);
+  console.log(`Indexable URLs omitted from sitemap chunks: ${omittedSitemapUrls.length}`);
+  console.log(`Unavailable internal link targets: ${brokenInternalLinks.size}`);
   console.log(`aggregateRating/reviewCount leaks: ${sourceScan.aggregateFields.length}`);
   console.log(`Unsupported services in sitemap: ${unsupportedServicesInSitemap.length}`);
   console.log(`Future locations in sitemap: ${futureLocationsInSitemap.length}`);

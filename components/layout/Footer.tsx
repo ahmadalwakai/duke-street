@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { CookieSettingsButton } from "@/components/layout/CookieSettingsButton";
+import { TrackedPhoneLink } from "@/components/analytics/TrackedPhoneLink";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -70,9 +71,7 @@ export function Footer() {
             </Text>
             <Text>
               Phone:{" "}
-              <a href={`tel:${SITE.phoneE164}`} style={{ color: "var(--chakra-colors-accent-red)" }}>
-                {SITE.phoneDisplay}
-              </a>
+              <TrackedPhoneLink location="footer" />
             </Text>
             <Text>
               WhatsApp:{" "}

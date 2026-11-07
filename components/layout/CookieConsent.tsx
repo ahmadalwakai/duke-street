@@ -44,6 +44,7 @@ export function CookieConsent() {
       ad_user_data: "denied",
       ad_personalization: "denied",
       analytics_storage: "denied",
+      personalization_storage: "denied",
       functionality_storage: "granted",
       security_storage: "granted",
     });
@@ -75,7 +76,7 @@ export function CookieConsent() {
           <Stack flex="1" gap="1">
             <Text fontWeight="700">We use cookies</Text>
             <Text color="fg.muted" fontSize={{ base: "xs", md: "sm" }} lineHeight="1.45">
-              Necessary cookies run the site. Analytics and ads only run with consent. See our{" "}
+              We save your cookie choice on this device. Google Ads measurement loads only if you accept. You can change your choice in the footer. See our{" "}
               <Link
                 href="/privacy"
                 style={{ color: "var(--chakra-colors-accent-red)" }}

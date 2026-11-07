@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <Heading as="h1" fontFamily="heading" size="3xl" letterSpacing="0.02em">
             PRIVACY POLICY
           </Heading>
-          <Text color="fg.muted">Last updated: 1 January 2026</Text>
+          <Text color="fg.muted">Last updated: 7 November 2026</Text>
 
           <Heading as="h2" size="lg" fontFamily="heading">
             Who we are
@@ -35,12 +35,12 @@ export default function PrivacyPage() {
             What data we collect
           </Heading>
           <Text>
-            When you contact us by phone, WhatsApp, SMS or our quote form we
+            When you contact us by phone, WhatsApp or SMS we
             collect: your name, phone number, vehicle details, postcode /
             location, and any details you share about the tyre fault. When you
-            visit the site we may collect IP address, device type, pages
-            visited, referring source and approximate location for analytics
-            and ad-performance measurement.
+            accept advertising measurement, Google may receive your IP address,
+            device details, page address, referring source and interactions
+            such as phone or WhatsApp clicks to measure ad performance.
           </Text>
 
           <Heading as="h2" size="lg" fontFamily="heading">
@@ -57,13 +57,40 @@ export default function PrivacyPage() {
             Cookies & tracking
           </Heading>
           <Text>
-            We use strictly necessary cookies for the site to function, and —
-            only with your consent — analytics and advertising cookies provided
-            by Google (Google Analytics, Google Ads, Google Tag Manager). We
-            implement Google Consent Mode v2: until you accept, no analytics,
-            ad-storage, ad-user-data or ad-personalisation signals are sent.
-            You can change your choice any time via the &ldquo;Cookie
-            settings&rdquo; link in the footer.
+            We store your cookie choice in your browser&apos;s local storage
+            under &ldquo;dst_consent_v2&rdquo;. Our Google Ads tag uses basic
+            Consent Mode v2: it does not load or send measurement requests
+            before you accept, or on visits where you have rejected. Earlier
+            clicks are not saved for later measurement. If you accept, Google
+            Ads may use advertising cookies and measure your interactions.
+            This site does not install a Google Analytics property or a Google
+            Tag Manager container.
+          </Text>
+          <Text>
+            You can change your choice via &ldquo;Cookie settings&rdquo; in the
+            footer. Withdrawing consent updates Google&apos;s consent status
+            and reloads the page to stop the previously loaded tag. Your choice
+            applies to this website; Tyre Rescue manages consent separately on
+            its booking platform.
+          </Text>
+
+          <Heading as="h2" size="lg" fontFamily="heading">
+            Online bookings through Tyre Rescue
+          </Heading>
+          <Text>
+            Our online booking links take you to Tyre Rescue, which provides
+            the booking platform. If you enter a tyre size on our site, we
+            pass it to Tyre Rescue to start your quote. You enter your
+            postcode, phone number and other booking details directly on
+            Tyre Rescue. Tyre Rescue uses those details to handle your
+            booking. See the{" "}
+            <a
+              href="https://www.tyrerescue.uk/privacy-policy"
+              style={{ color: "var(--chakra-colors-accent-red)" }}
+            >
+              Tyre Rescue Privacy Policy
+            </a>{" "}
+            for details about how it handles your data.
           </Text>
 
           <Heading as="h2" size="lg" fontFamily="heading">
@@ -81,7 +108,9 @@ export default function PrivacyPage() {
           </Heading>
           <Text>
             Job records are retained for 6 years to comply with UK accounting
-            law. Marketing analytics data is retained for up to 14 months.
+            law. Advertising measurement is handled by Google under its
+            retention policies; contact us for details about our account&apos;s
+            current settings.
           </Text>
 
           <Heading as="h2" size="lg" fontFamily="heading">

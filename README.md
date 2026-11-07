@@ -1,73 +1,68 @@
 # Duke Street Tyres
 
-Production-ready Next.js 15 (App Router, TypeScript strict) marketing site for **Duke Street Tyres** — 24/7 mobile tyre fitting in Glasgow, Edinburgh and Dundee.
+Next.js 15 / React 19 / TypeScript marketing site for mobile tyre fitting. Customers call, use WhatsApp, or continue to the shared Tyre Rescue booking platform. There is no local booking database. A separate optional API authenticates the mobile admin client using environment-configured credentials.
 
-No database, no forms, no backend. Two CTAs everywhere: **Call** and **WhatsApp**.
+## Local setup
 
-## Stack
-
-- Next.js 15 (App Router, statically rendered)
-- TypeScript (strict, no `any`)
-- Chakra UI v3 (`createSystem` with semantic tokens + `solidRed` / `solidGreen` / `ghostLight` Button recipe variants)
-- framer-motion (fade-up on scroll, marquee, rotating tyre, sticky bar slide-in — all respect `prefers-reduced-motion`)
-- next/font (Inter body + Bebas Neue headlines)
-
-## Brand
-
-- Phone: `0141 266 0690` (`tel:+441412660690`)
-- WhatsApp: `07423 262 955` (`https://wa.me/447423262955`)
-- Address: 3, 10 Gateside St, Glasgow G31 1PD
-- Hours: 24/7, response 30–40 mins
-- Domain: https://www.dukestreettyres.com
-
-All in [lib/site.ts](lib/site.ts) as a typed `SITE` const with `telHref()` and `waHref(msg?)` helpers.
-
-## Routes (16 statically prerendered)
-
-```
-/                                                  Glasgow-primary home
-/mobile-tyre-fitting-scotland
-/mobile-tyre-fitting-{glasgow|edinburgh|dundee}
-/emergency-tyre-call-out-{glasgow|edinburgh|dundee}
-/24-hour-mobile-tyre-fitting-{glasgow|edinburgh|dundee}
-/roadside-tyre-replacement-{glasgow|edinburgh|dundee}
-/roadside-tyre-replacement-near-me
-/sitemap.xml
-/robots.txt
-```
-
-City data, service variants, Scotland coverage data and unique local intros live in [lib/cities.ts](lib/cities.ts). Wider Scotland areas are coverage data, not separate local offices or indexable town doorway pages.
-
-## SEO
-
-- Metadata template `%s | Duke Street Tyres`, default title under 60 chars, descriptions under 155 chars
-- `metadataBase`, OpenGraph, Twitter, theme-color `#0B0F14`, `lang="en-GB"`
-- Per-page `alternates.canonical`
-- JSON-LD via [lib/schema.ts](lib/schema.ts):
-  - `localBusinessSchema(city?)` — `AutoRepair`, NAP, geo, 24/7 `openingHoursSpecification`, `areaServed`, `priceRange: "££"` — injected on **every** page
-  - `serviceSchema(name, city)` — injected on city pages
-  - `faqSchema(items)` — injected wherever the FAQ accordion renders
-- `app/sitemap.ts` lists all live indexable URLs with priorities; `app/robots.ts` allows public assets/pages, disallows noindex/private paths, and references the canonical sitemap
-- All animations respect `prefers-reduced-motion` (CSS-level kill in [app/globals.css](app/globals.css) and component-level `useReducedMotion` checks)
-- Hero image / SVG marked `priority` semantics; map iframe is `IntersectionObserver`-lazy
-- AVIF + WebP via [next.config.ts](next.config.ts)
-
-## Develop
+Use Node 24 and npm. Copy `.env.example` to `.env.local` and configure only the integrations you need. Public pages build without credentials; the admin login returns 503 until configured.
 
 ```powershell
-npm install
+npm ci
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-## Build
+`NEXT_PUBLIC_DUKE_SHARED_BOOKING_URL` controls the booking handoff. The example points to hosted Tyre Rescue. Without that variable, development uses `http://localhost:3026/book`; production uses `https://www.tyrerescue.uk/book?sourceApp=duke_street_tyres`. The quote form pre-fills that flow; it does not create a booking here.
+
+## Checks and build
 
 ```powershell
+npm run check
+npm audit --audit-level=moderate
 npm run build
 npm start
 ```
 
-Build output: static marketing pages + sitemap/robots.
+`check` runs ESLint, TypeScript, Node regression tests via `tsx`, and the SEO audit. `npm run lint` uses ESLint 9 flat config instead of deprecated `next lint`. GitHub Actions runs the same checks and a production build. Security tests cover invalid requests, password verification, signing configuration, throttling and headers; tracking and SEO tests cover consent, conversion semantics, metadata and sitemap contracts.
 
-## Deploy
+The scoped `minimatch` override under `@typescript-eslint/typescript-estree` uses the patched 11.x release for GHSA-g3hv-75wg-m249. Other consumers retain their compatible major. Keep the override until upstream ships a fixed dependency range; re-run lint, typecheck, tests and the audit when changing it.
 
-Push to a Git repo and import into Vercel — zero config required.
+## Consent and conversions
+
+The site uses basic Google Consent Mode. Before opt-in it creates the local consent queue but loads no Google measurement script and drops measurement events. Acceptance loads the Google Ads tag. Rejecting after acceptance denies consent and reloads to stop the loaded tag. Stored choices are validated and synchronized across tabs. Cookie Settings reopens the choice.
+
+The footer and other phone CTAs emit `call_click`; WhatsApp emits `whatsapp_click`. Configured Google Ads click conversions carry no invented monetary value. The form handoff emits `booking_start`, not a completed lead. `/thanks` does not emit Booking Confirmed or assert that a booking exists.
+
+A genuine Duke booking conversion belongs to Tyre Rescue's server-verified successful-payment flow. The accompanying changes in `C:\tyrerescue` route the confirmed booking's stored `sourceApp` to a Duke-specific conversion label and retain the stable transaction ID. Both projects need deployment and the Tyre Rescue public environment variable needs configuring before live verification. See [verification status](docs/repair-verification.md).
+
+## Admin API and deployment
+
+Administration is through the Assisted Chat iOS app signing in to Tyre Rescue, then **My account & settings → Switch workspace → Duke Street Tyres**. The central service verifies its own admin device session. Changing workspace filters booking sources without changing the login backend or credential. Stock, drivers and quotes remain shared. This source configuration was reviewed and its 60 focused app session/workspace tests passed; the installed iPhone build was not verified.
+
+`POST /api/mobile/admin/auth/login` expects JSON `{ "email": "...", "password": "..." }`. Configure `MOBILE_ADMIN_EMAIL`, a bcrypt `MOBILE_ADMIN_PASSWORD_HASH`, and `MOBILE_ADMIN_JWT_SECRET`; `AUTH_SECRET` remains a legacy fallback. Secrets must stay server-only. Responses are uncached and preserve the existing token/user contract. This repository has no protected endpoint consuming that token; verify that any backend accepting it checks signature, expiry and authorization. Never put the signing secret in the mobile client.
+
+That Duke endpoint is legacy compatibility code; it is not the central Assisted Chat authentication path and does not need configuring to manage Duke bookings through Tyre Rescue.
+
+API burst limiting and login throttling use memory local to each running instance. They are not a distributed abuse-control service. Forwarded client IP headers require a trusted reverse proxy such as Vercel. A shared limiter or platform rate limit remains operational work.
+
+Security headers are configured in `next.config.ts`: nosniff, SAMEORIGIN framing, restricted base/object/frame CSP, referrer and permissions policies, and production HSTS. The CSP is a baseline; it does not enforce a script nonce policy.
+
+Set public conversion variables before building, since Next.js embeds `NEXT_PUBLIC_*` values in browser bundles. Configure Production and Preview separately. Inspect the linked project and environment scope before deploying; this repair has not deployed either project or changed live Ads settings.
+
+## Routes and SEO
+
+The route model contains 13,043 indexable service URLs across 260 supported locations, plus five static sitemap URLs. Three non-empty service sitemap chunks contain 5,000 / 5,000 / 3,043 entries. Dynamic routes prebuild up to 200 entries per route depth and generate other supported pages on demand. Withheld locations/services stay noindex or unavailable.
+
+Titles use one brand suffix; canonicals point to the production `www` domain. The shared LocalBusiness identity keeps the Glasgow address and coordinates while other cities appear as service areas. No aggregate rating is emitted in JSON-LD. The visible rating count and exact map pin still require live Business Profile verification.
+
+A unique URL/title is not evidence of distinct content: 10,963 intent variants share substantial copy. [SEO review](docs/seo-review.md) records the audit and the proposed Search Console-led consolidation. No bulk indexing change has been applied.
+
+## Project references
+
+- [Site details and booking URL](lib/site.ts)
+- [Metadata](lib/metadata.ts), [schema](lib/schema.ts), [SEO route model](lib/seo/seo-pages.ts)
+- [Environment template](.env.example)
+- [Repair verification and outstanding checks](docs/repair-verification.md)
+- [Historical Google Ads briefs](<ads phases/duke-street-tyres-google-ads-command.md>)
+
+Historical duplicate briefs now point to their canonical files under `ads phases`. Local screenshots, logs and measurement outputs are retained under ignored `.artifacts` and excluded from deployment; operational Ads backups remain intact.

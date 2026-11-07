@@ -2,11 +2,15 @@
 node_modules/
 out/
 *.tsbuildinfo
+ads phases/phase-c-build/
+ads phases/phase-c-backups/
+ads phases/phase-f-execute/
+.artifacts/
+.env*
 
 screen-*.png
 current-screen.png
 .tmp*
-*.png
 *.log
 *.pid
 *.exit

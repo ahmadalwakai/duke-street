@@ -22,13 +22,14 @@ type Bucket = {
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __dukeStreetTyresRateLimitStore: Map<string, Bucket> | undefined;
-  // eslint-disable-next-line no-var
   var __dukeStreetTyresRateLimitLastCleanup: number | undefined;
 }
 
 function getStore(): Map<string, Bucket> {
+  // Process/isolate-local only: middleware and route functions do not share a
+  // global quota across Vercel instances. Use a shared store or platform rule
+  // before relying on this as a distributed brute-force protection boundary.
   globalThis.__dukeStreetTyresRateLimitStore ??= new Map<string, Bucket>();
   return globalThis.__dukeStreetTyresRateLimitStore;
 }
@@ -50,6 +51,8 @@ function secondsUntil(timestamp: number, now: number): number {
 }
 
 export function getClientIpFromHeaders(headers: Headers): string {
+  // Requires a trusted proxy to overwrite incoming forwarding headers. Vercel
+  // does this; a self-hosted deployment must enforce the same trust boundary.
   const forwardedFor = headers.get("x-forwarded-for");
   const candidates = [
     forwardedFor?.split(",")[0]?.trim(),

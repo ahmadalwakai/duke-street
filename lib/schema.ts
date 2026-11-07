@@ -98,7 +98,6 @@ export function websiteSchema(): JsonLd {
 }
 
 export function localBusinessSchema(city?: CitySlug): JsonLd {
-  const selectedCity = city ? CITIES[city] : null;
   const areaServed = city ? cityArea(city) : scotlandServiceAreas();
   return {
     "@context": "https://schema.org",
@@ -123,8 +122,9 @@ export function localBusinessSchema(city?: CitySlug): JsonLd {
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: selectedCity?.lat ?? SITE.geo.lat,
-      longitude: selectedCity?.lng ?? SITE.geo.lng,
+      // Coverage cities are service areas, not separate business premises.
+      latitude: SITE.geo.lat,
+      longitude: SITE.geo.lng,
     },
     areaServed,
     openingHoursSpecification: [

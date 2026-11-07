@@ -1,5 +1,7 @@
 # Developer Brief — Phase E
 
+> Historical brief. The implementation and remaining live checks are recorded in [repair verification](docs/repair-verification.md). In particular, `/thanks` must not fire a conversion without verified completion, and booking conversions are now integrated at Tyre Rescue's verified payment flow. The old optional-ID fallback below is superseded.
+
 Hand this to the developer unchanged. Do not implement any of these items yourself.
 
 ---

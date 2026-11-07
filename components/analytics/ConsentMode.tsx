@@ -15,14 +15,9 @@ export function ConsentMode() {
       analytics_storage: 'denied',
       functionality_storage: 'granted',
       security_storage: 'granted',
-      wait_for_update: 500
+      personalization_storage: 'denied'
     });
     gtag('set', 'ads_data_redaction', true);
-    gtag('set', 'url_passthrough', true);
-    try {
-      var raw = localStorage.getItem('dst_consent_v2');
-      if (raw) { gtag('consent', 'update', JSON.parse(raw)); }
-    } catch (e) {}
   `;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }

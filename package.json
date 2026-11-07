@@ -6,26 +6,43 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "seo:audit": "node scripts/audit-scotland-locations.mjs",
-    "seo:check": "node scripts/audit-scotland-locations.mjs && node scripts/check-seo.mjs"
+    "seo:check": "node scripts/audit-scotland-locations.mjs && node scripts/check-seo.mjs",
+    "test": "tsx --test tests/*.test.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run seo:check",
+    "test:smoke": "node scripts/check-runtime.mjs"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.2.3",
     "@emotion/react": "^11.13.3",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^11.11.9",
-    "next": "^15.1.0",
+    "next": "^15.5.29",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.14.0",
-    "eslint-config-next": "^15.1.0",
+    "eslint-config-next": "^15.5.29",
+    "tsx": "^4.23.15",
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.32",
+      "sharp": "^0.35.5"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    }
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

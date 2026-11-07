@@ -1,10 +1,10 @@
 "use client";
 
-import { Box, Heading, SimpleGrid, Stack, Text } from "@chakra-ui/react";
+import { Box, Heading, Stack, Text } from "@chakra-ui/react";
 import Link from "next/link";
 import { useState } from "react";
 import { AppButton, type AppButtonVariant } from "@/components/ui/AppButton";
-import { trackQuoteSubmit } from "@/lib/analytics";
+import { trackBookingStart } from "@/lib/analytics";
 import { bookingHref } from "@/lib/site";
 
 type Props = {
@@ -29,32 +29,30 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-function normalizeTyreSize(value: string): string {
+const tyreSizePattern = String.raw`\s*\d{3}\s*\/\s*\d{2,3}\s*[rR]?\s*\d{2}\s*`;
+
+function normalizeTyreSize(value: string): string | undefined {
   const compact = value.trim().toUpperCase().replace(/\s+/g, "");
   const match = compact.match(/^(\d{3})\/(\d{2,3})R?(\d{2})$/);
-  return match ? `${match[1]}/${match[2]}R${match[3]}` : compact;
+  return match ? `${match[1]}/${match[2]}R${match[3]}` : undefined;
 }
 
 export function QuoteForm({
   city,
   title = "GET A 60-SECOND QUOTE",
-  description = "Three quick details. We'll start your live booking.",
+  description = "Add your tyre size if you know it to start your quote.",
   submitLabel = "Start live booking",
   submitVariant = "solidRed",
 }: Props) {
-  const [postcode, setPostcode] = useState("");
-  const [size, setSize] = useState("");
-  const [phone, setPhone] = useState("");
+  const [tyreSize, setTyreSize] = useState("");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const params = new URLSearchParams();
-    params.set("service", "fitting");
-    if (postcode.trim()) params.set("postcode", postcode.trim());
-    if (size.trim()) params.set("size", normalizeTyreSize(size));
-    if (phone.trim()) params.set("phone", phone.trim());
+    const size = normalizeTyreSize(tyreSize);
+    const params = new URLSearchParams({ service: "fitting" });
+    if (size) params.set("size", size);
 
-    trackQuoteSubmit({ city: city ?? "home" });
+    trackBookingStart({ city: city ?? "home" });
     window.location.assign(bookingHref(params));
   }
 
@@ -68,7 +66,7 @@ export function QuoteForm({
       p={{ base: "4", md: "5" }}
       boxShadow="0 8px 28px rgba(0,0,0,0.35)"
     >
-      <form onSubmit={onSubmit}>
+      <form action="/book" onSubmit={onSubmit}>
         <Stack gap="3">
           <Stack gap="1">
             <Heading
@@ -85,37 +83,16 @@ export function QuoteForm({
             </Text>
           </Stack>
 
-          <SimpleGrid columns={{ base: 1, sm: 3 }} gap="2">
-            <input
-              type="text"
-              placeholder="Postcode"
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              autoComplete="postal-code"
-              required
-              aria-label="Postcode"
-              style={inputStyle}
-            />
-            <input
-              type="text"
-              placeholder="Tyre size"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-              aria-label="Tyre size"
-              style={inputStyle}
-            />
-            <input
-              type="tel"
-              placeholder="Mobile number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              inputMode="tel"
-              autoComplete="tel"
-              required
-              aria-label="Mobile number"
-              style={inputStyle}
-            />
-          </SimpleGrid>
+          <input
+            type="text"
+            placeholder="Tyre size, e.g. 205/55R16"
+            value={tyreSize}
+            onChange={(e) => setTyreSize(e.target.value)}
+            pattern={tyreSizePattern}
+            title="Enter a tyre size like 205/55R16"
+            aria-label="Tyre size (optional)"
+            style={inputStyle}
+          />
 
           <AppButton
             type="submit"
@@ -127,11 +104,11 @@ export function QuoteForm({
           </AppButton>
 
           <Text fontSize="xs" color="fg.muted">
-            By submitting you agree to our{" "}
+            Enter your postcode and phone number on Tyre Rescue to complete your booking.{" "}
             <Box asChild color="accent.red">
               <Link href="/privacy">Privacy Policy</Link>
             </Box>
-            . No spam — we only contact you about your tyre.
+            .
           </Text>
         </Stack>
       </form>

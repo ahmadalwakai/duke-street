@@ -65,7 +65,10 @@ export function getSeoSitemapChunks(now = new Date()): readonly (readonly SeoSit
   for (let index = 0; index < entries.length; index += SITEMAP_CHUNK_SIZE) {
     chunks.push(entries.slice(index, index + SITEMAP_CHUNK_SIZE));
   }
-  return chunks.slice(0, MAX_SERVICE_SITEMAP_CHUNKS);
+  if (chunks.length > MAX_SERVICE_SITEMAP_CHUNKS) {
+    throw new Error("SEO sitemap exceeds configured route capacity; add sitemap routes before publishing more pages.");
+  }
+  return chunks;
 }
 
 export function getSeoSitemapChunk(chunkNumber: number, now = new Date()): readonly SeoSitemapEntry[] {
@@ -81,7 +84,7 @@ export function getSitemapIndexEntries(now = new Date()): readonly SeoSitemapEnt
       changeFrequency: "daily",
       priority: 1,
     },
-    ...Array.from({ length: MAX_SERVICE_SITEMAP_CHUNKS }, (_, index) => ({
+    ...getSeoSitemapChunks(now).map((_, index) => ({
       url: siteUrl(`/sitemap-services-${index + 1}.xml`),
       lastModified: now,
       changeFrequency: "daily" as const,
