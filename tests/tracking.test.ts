@@ -16,8 +16,8 @@ const denied = {
 } as const;
 
 before(async () => {
-  process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_CONVERSION = "AW-18255173604/test-call";
-  process.env.NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION = "AW-18255173604/test-whatsapp";
+  process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_CONVERSION = "AW-18563782369/test-call";
+  process.env.NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION = "AW-18563782369/test-whatsapp";
   analytics = await import("../lib/analytics");
 });
 
@@ -65,7 +65,7 @@ test("accept loads the tag once without replaying earlier events", () => {
   assert.deepEqual(calls.map((entry) => entry[0]), ["consent", "js", "config"]);
   analytics.trackCallClick("footer");
   const conversion = calls.find((entry) => entry[1] === "conversion")?.[2] as Record<string, unknown>;
-  assert.equal(conversion.send_to, "AW-18255173604/test-call");
+  assert.equal(conversion.send_to, "AW-18563782369/test-call");
   assert.equal(conversion.location, "footer");
   assert.equal("value" in conversion, false);
   assert.equal("currency" in conversion, false);

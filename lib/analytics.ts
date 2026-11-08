@@ -20,7 +20,8 @@ declare global {
   }
 }
 
-export const GOOGLE_ADS_ID = "AW-18255173604";
+// Google Ads account 283-207-0770 (replaces the retired AW-18255173604 tag).
+export const GOOGLE_ADS_ID = "AW-18563782369";
 export const CONSENT_STORAGE_KEY = "dst_consent_v2";
 export const CONSENT_CHANGE_EVENT = "dst:consent-changed";
 
