@@ -76,7 +76,7 @@ export function CookieConsent() {
           <Stack flex="1" gap="1">
             <Text fontWeight="700">We use cookies</Text>
             <Text color="fg.muted" fontSize={{ base: "xs", md: "sm" }} lineHeight="1.45">
-              We save your cookie choice on this device. Google Ads measurement loads only if you accept. You can change your choice in the footer. See our{" "}
+              We save your cookie choice on this device. Our Google Ads tag sets no advertising cookies unless you accept; until then it sends only cookieless, anonymised signals. You can change your choice in the footer. See our{" "}
               <Link
                 href="/privacy"
                 style={{ color: "var(--chakra-colors-accent-red)" }}

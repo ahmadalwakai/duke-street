@@ -46,51 +46,56 @@ afterEach(() => {
   Reflect.deleteProperty(globalThis, "document");
 });
 
-test("unanswered and rejected consent load no Google tag and discard clicks", () => {
+const conversionOf = () =>
+  calls.find((entry) => entry[1] === "conversion")?.[2] as Record<string, unknown> | undefined;
+
+test("unanswered consent pushes no update and never injects scripts at runtime", () => {
   analytics.syncGoogleAdsConsent();
-  analytics.trackCallClick("footer");
-  analytics.setConsent(denied);
-  analytics.syncGoogleAdsConsent();
-  analytics.trackWhatsAppClick("footer");
-  assert.deepEqual(scripts, []);
   assert.deepEqual(calls, []);
+  assert.deepEqual(scripts, []);
 });
 
-test("accept loads the tag once without replaying earlier events", () => {
-  analytics.trackCallClick("before-consent");
+test("clicks before consent send a cookieless conversion without a monetary value", () => {
+  analytics.trackCallClick("footer");
+  const conversion = conversionOf();
+  assert.equal(conversion?.send_to, "AW-18563782369/test-call");
+  assert.equal(conversion?.location, "footer");
+  assert.equal("value" in (conversion ?? {}), false);
+  assert.equal("currency" in (conversion ?? {}), false);
+  assert.equal(calls.some((entry) => entry[0] === "consent"), false);
+});
+
+test("accepting upgrades consent once, however often it syncs", () => {
   analytics.setConsent(granted);
   analytics.syncGoogleAdsConsent();
   analytics.syncGoogleAdsConsent();
-  assert.equal(scripts.length, 1);
-  assert.deepEqual(calls.map((entry) => entry[0]), ["consent", "js", "config"]);
-  analytics.trackCallClick("footer");
-  const conversion = calls.find((entry) => entry[1] === "conversion")?.[2] as Record<string, unknown>;
-  assert.equal(conversion.send_to, "AW-18563782369/test-call");
-  assert.equal(conversion.location, "footer");
-  assert.equal("value" in conversion, false);
-  assert.equal("currency" in conversion, false);
+  const updates = calls.filter((entry) => entry[0] === "consent");
+  assert.equal(updates.length, 1);
+  assert.equal((updates[0][2] as Record<string, string>).ad_storage, "granted");
+  analytics.trackWhatsAppClick("fab");
+  assert.equal(conversionOf()?.send_to, "AW-18563782369/test-whatsapp");
 });
 
-test("rejecting after acceptance denies every optional purpose and reloads", () => {
+test("rejecting after acceptance returns every optional purpose to denied without reloading", () => {
   analytics.setConsent(granted);
   analytics.syncGoogleAdsConsent();
   analytics.setConsent(denied);
   analytics.syncGoogleAdsConsent();
-  assert.equal(reloads, 1);
+  assert.equal(reloads, 0);
   assert.equal(analytics.hasMeasurementConsent(), false);
-  assert.equal((calls.at(-1)?.[2] as Record<string, string>).personalization_storage, "denied");
-  const count = calls.length;
-  analytics.trackCallClick("rejected");
-  assert.equal(calls.length, count);
+  const last = calls.at(-1) as unknown[];
+  assert.deepEqual(last.slice(0, 2), ["consent", "update"]);
+  assert.equal((last[2] as Record<string, string>).ad_storage, "denied");
+  assert.equal((last[2] as Record<string, string>).personalization_storage, "denied");
 });
 
-test("malformed or incomplete stored consent cannot enable tracking", () => {
+test("malformed or incomplete stored consent never upgrades consent", () => {
   for (const raw of ["{", "true", "{}", '{"ad_storage":"granted"}', '{"ad_storage":true}']) {
     stored.set(analytics.CONSENT_STORAGE_KEY, raw);
     assert.equal(analytics.readStoredConsent(), null);
     analytics.syncGoogleAdsConsent();
   }
-  assert.equal(scripts.length, 0);
+  assert.equal(calls.some((entry) => entry[0] === "consent"), false);
 });
 
 test("booking handoff records only a start, without any conversion", () => {
@@ -99,10 +104,10 @@ test("booking handoff records only a start, without any conversion", () => {
   assert.deepEqual(calls, [["event", "booking_start", { city: "glasgow" }]]);
 });
 
-test("consent remains usable for this page when storage is blocked", () => {
+test("consent still applies for this page when storage is blocked", () => {
   Object.defineProperty(window, "localStorage", { get() { throw new Error("blocked"); } });
   assert.equal(analytics.readStoredConsent(), null);
   analytics.setConsent(granted);
   analytics.syncGoogleAdsConsent();
-  assert.equal(scripts.length, 1);
+  assert.deepEqual(calls.map((entry) => entry[0]), ["consent"]);
 });

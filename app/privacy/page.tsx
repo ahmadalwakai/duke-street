@@ -58,18 +58,19 @@ export default function PrivacyPage() {
           </Heading>
           <Text>
             We store your cookie choice in your browser&apos;s local storage
-            under &ldquo;dst_consent_v2&rdquo;. Our Google Ads tag uses basic
-            Consent Mode v2: it does not load or send measurement requests
-            before you accept, or on visits where you have rejected. Earlier
-            clicks are not saved for later measurement. If you accept, Google
-            Ads may use advertising cookies and measure your interactions.
+            under &ldquo;dst_consent_v2&rdquo;. Our Google Ads tag uses advanced
+            Consent Mode v2: it loads on every visit, but until you accept it
+            sets no advertising cookies, redacts ad-click identifiers and sends
+            only cookieless signals that Google uses for aggregate conversion
+            modelling. If you accept, Google Ads may use advertising cookies
+            and measure your interactions.
             This site does not install a Google Analytics property or a Google
             Tag Manager container.
           </Text>
           <Text>
             You can change your choice via &ldquo;Cookie settings&rdquo; in the
-            footer. Withdrawing consent updates Google&apos;s consent status
-            and reloads the page to stop the previously loaded tag. Your choice
+            footer. Withdrawing consent immediately returns the tag to its
+            cookieless, denied state. Your choice
             applies to this website; Tyre Rescue manages consent separately on
             its booking platform.
           </Text>

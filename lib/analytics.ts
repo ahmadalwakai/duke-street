@@ -1,4 +1,6 @@
-// Basic Google Consent Mode: no Google script or measurement events before opt-in.
+// Advanced Google Consent Mode: the tag loads on every visit with everything
+// denied (no ad cookies, redacted ad identifiers, cookieless pings only).
+// Accepting cookies upgrades consent; rejecting downgrades it again.
 
 type ConsentValue = "granted" | "denied";
 export type ConsentState = {
@@ -16,7 +18,7 @@ declare global {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
     dstConsent?: ConsentState;
-    dstGoogleTagStarted?: boolean;
+    dstAppliedConsent?: string;
   }
 }
 
@@ -72,39 +74,25 @@ export function setConsent(state: ConsentState) {
   window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
 }
 
-/** Called on mount and consent changes. Only accepting can load Google's script. */
+/**
+ * Called on mount and consent changes. The <head> script already loaded the
+ * tag with denied defaults; this only pushes the visitor's saved choice.
+ */
 export function syncGoogleAdsConsent() {
   if (typeof window === "undefined") return;
-  if (!hasMeasurementConsent()) {
-    if (window.dstGoogleTagStarted) {
-      gtag("consent", "update", {
-        ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied",
-        analytics_storage: "denied", personalization_storage: "denied",
-      });
-      // Removing a script element cannot unload an already running tag.
-      // Reload with the saved denial so it cannot continue measuring this visit.
-      window.location.reload();
-    }
-    return;
-  }
-  if (window.dstGoogleTagStarted) return;
-  gtag("consent", "update", readStoredConsent());
-  gtag("js", new Date());
-  gtag("config", GOOGLE_ADS_ID);
-  window.dstGoogleTagStarted = true;
-  const script = document.createElement("script");
-  script.id = "dst-google-ads";
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`;
-  document.head.appendChild(script);
+  const state = readStoredConsent();
+  if (!state) return;
+  const applied = JSON.stringify(state);
+  if (window.dstAppliedConsent === applied) return;
+  window.dstAppliedConsent = applied;
+  gtag("consent", "update", state);
 }
 
-/** Drop pre-consent events; never replay earlier clicks when someone opts in. */
+/** Sent in real time; Google honours the current consent state (cookieless when denied). */
 export function track(
   event: string,
   params: Record<string, string | number | boolean> = {},
 ) {
-  if (!hasMeasurementConsent()) return;
   gtag("event", event, params);
 }
 

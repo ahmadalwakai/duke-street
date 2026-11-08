@@ -16,7 +16,12 @@ for (const path of ["/", "/mobile-tyre-fitting/glasgow", "/mobile-tyre-fitting/e
   const title = html.match(/<title>(.*?)<\/title>/)?.[1];
   assert.equal((title?.match(/Duke Street Tyres/g) || []).length, 1, `${path}: one brand in title`);
   assert.ok(html.includes('rel="canonical" href="https://www.dukestreettyres.com'), `${path}: canonical`);
-  assert.equal(/<script[^>]+src="https:\/\/www.googletagmanager.com/.test(html), false, "No Google script in pre-consent HTML");
+  // Advanced consent mode: gtag.js is in the HTML (React may hoist it), and the
+  // dataLayer receives the denied defaults before config, which is what Google requires.
+  assert.ok(/<script[^>]+src="https:\/\/www.googletagmanager.com\/gtag\/js\?id=AW-\d+"/.test(html), `${path}: Google tag`);
+  const defaultsAt = html.indexOf("gtag('consent', 'default'");
+  const configAt = html.indexOf("gtag('config'");
+  assert.ok(defaultsAt >= 0 && configAt > defaultsAt, `${path}: denied defaults precede config`);
   if (path === "/thanks") assert.ok(html.includes('content="noindex, nofollow"'));
   console.log(`PASS rendered page + headers: ${path}`);
 }
