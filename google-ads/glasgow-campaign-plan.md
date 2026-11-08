@@ -6,7 +6,7 @@ Business data used:
 - Business: Duke Street Tyres
 - Website: https://www.dukestreettyres.com
 - Core Glasgow page: https://www.dukestreettyres.com/mobile-tyre-fitting-glasgow
-- Phone: 0141 266 0690
+- Phone: 0333 015 2519
 - WhatsApp: 07423 262 955
 - Address: 3, 10 Gateside St, Glasgow, G31 1PD
 - Service promise from site: 24/7 mobile tyre fitting, 30-40 minute average response, G1-G81 coverage, card/contactless/Apple Pay, budget/mid-range/premium tyres, cars/vans/4x4s/run-flats.
@@ -97,7 +97,7 @@ https://www.dukestreettyres.com/mobile-tyre-fitting-glasgow
 
 Call asset:
 - Country: United Kingdom
-- Number: 0141 266 0690
+- Number: 0333 015 2519
 - Schedule: 24/7 only if calls are answered 24/7
 
 Location asset:

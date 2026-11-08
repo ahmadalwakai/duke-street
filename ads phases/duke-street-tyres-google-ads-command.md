@@ -67,7 +67,7 @@ If any instruction here conflicts with what you find in the live account, **stop
 Read from the live website. **Re-verify every item before use.** If anything differs, report the discrepancy and stop.
 
 **Business:** Duke Street Tyres — 3, 10 Gateside St, Glasgow, G31 1PD
-**Phone:** 0141 266 0690 (`tel:+441412660690`)
+**Phone:** 0333 015 2519 (`tel:+443330152519`)
 **WhatsApp:** 07423 262 955 (`https://wa.me/447423262955`)
 **Booking flow:** `/book`
 **In-scope service areas:** Glasgow (G1–G81), Edinburgh (EH1–EH17), plus the agreed radius around each and the motorway corridors within them.
@@ -142,7 +142,7 @@ For each item report: current state, whether it is correct, and the specific ris
 18. **Enhanced Conversions status.** Enhanced conversions for web and for leads are now governed by a single combined on/off setting — report the current unified state, not two separate ones.
 19. Consent Mode v2 — implemented or not, and whether the cookie banner blocks tags before consent. Required for UK/EEA.
 20. Call reporting: enabled or not, and **are Google forwarding numbers actually available in this account for the UK right now?** Verify — do not assume.
-21. Website call tracking: does the `tel:+441412660690` link fire a tracked event? Test it.
+21. Website call tracking: does the `tel:+443330152519` link fire a tracked event? Test it.
 22. WhatsApp CTA: does the `wa.me` click fire a tracked event **before** navigation? Test it.
 23. Booking flow: does `/book` end on a distinct confirmation page or state with a booking ID available for deduplication? Walk it end to end and report the confirmation URL.
 24. **Attribution identifier capture — determine precisely what the site and backend currently store:**
@@ -336,7 +336,7 @@ City-named headlines may be used **only inside the matching single-city campaign
 
 Write headlines that read correctly whether or not the call asset renders.
 
-**Assets:** call asset (0141 266 0690) with call reporting and a 24/7 schedule; location asset via the linked Google Business Profile; sitelinks (Glasgow service, Edinburgh service, Roadside help, Book online); callouts (24/7 Call-Out, 30–40 Min Response, Fully Insured, Card & Apple Pay); structured snippets (tyre brands). Call bid adjustment now sits at call-asset level, not campaign level — configure it there.
+**Assets:** call asset (0333 015 2519) with call reporting and a 24/7 schedule; location asset via the linked Google Business Profile; sitelinks (Glasgow service, Edinburgh service, Roadside help, Book online); callouts (24/7 Call-Out, 30–40 Min Response, Fully Insured, Card & Apple Pay); structured snippets (tyre brands). Call bid adjustment now sits at call-asset level, not campaign level — configure it there.
 
 Pin only where structurally necessary — over-pinning kills combination testing.
 

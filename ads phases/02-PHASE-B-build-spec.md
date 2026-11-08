@@ -164,7 +164,7 @@ Headline bank: `24/7 Mobile Tyre Fitting` · `Flat Tyre? We Come To You` · `Eme
 
 City-named headlines only inside the matching single-city campaign. Never write "Dundee" in any asset. Write headlines that read correctly whether or not the call asset renders.
 
-**Assets:** call asset (0141 266 0690) with call reporting and a 24/7 schedule; location asset via the linked Google Business Profile; sitelinks (Glasgow service, Edinburgh service, Roadside help, Book online); callouts (24/7 Call-Out, 30–40 Min Response, Fully Insured, Card & Apple Pay); structured snippets (tyre brands). **Call bid adjustment now sits at call-asset level, not campaign level** — configure it there.
+**Assets:** call asset (0333 015 2519) with call reporting and a 24/7 schedule; location asset via the linked Google Business Profile; sitelinks (Glasgow service, Edinburgh service, Roadside help, Book online); callouts (24/7 Call-Out, 30–40 Min Response, Fully Insured, Card & Apple Pay); structured snippets (tyre brands). **Call bid adjustment now sits at call-asset level, not campaign level** — configure it there.
 
 Pin only where structurally necessary — over-pinning kills combination testing.
 

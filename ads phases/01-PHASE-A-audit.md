@@ -33,7 +33,7 @@ If you are blocked, lack access, or find something that contradicts this brief: 
 Read from the live website. Re-verify every item. Report any discrepancy.
 
 - **Business:** Duke Street Tyres — 3, 10 Gateside St, Glasgow, G31 1PD
-- **Phone:** 0141 266 0690 (`tel:+441412660690`)
+- **Phone:** 0333 015 2519 (`tel:+443330152519`)
 - **WhatsApp:** 07423 262 955 (`https://wa.me/447423262955`)
 - **Booking flow:** `/book`
 
@@ -68,7 +68,7 @@ For every item report three things: **current state**, **is it correct**, **spec
 18. **Enhanced Conversions status.** Enhanced conversions for web and for leads are now a single combined on/off setting — report the unified state, not two separate ones.
 19. Consent Mode v2 — implemented or not, and whether the cookie banner blocks tags before consent. Required for UK.
 20. Call reporting: enabled or not, and **are Google forwarding numbers actually available in this account for the UK right now?** Verify — do not assume.
-21. Website call tracking: does the `tel:+441412660690` link fire a tracked event? Test it.
+21. Website call tracking: does the `tel:+443330152519` link fire a tracked event? Test it.
 22. WhatsApp CTA: does the `wa.me` click fire a tracked event **before** navigation? Test it.
 23. Booking flow: does `/book` end on a distinct confirmation page or state with a booking ID available for deduplication? Walk it end to end. Report the confirmation URL.
 24. **Attribution identifier capture — what does the site/backend actually store?** GCLID; GBRAID/WBRAID where applicable; first-party lead identifiers (booking ID, enquiry ID); phone/email where lawfully collected and consented.
